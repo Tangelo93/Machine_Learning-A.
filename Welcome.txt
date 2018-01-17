@@ -1,0 +1,11 @@
+Welcome to the share workspacce!
+
+Couple things:
+	-Please set up your Github account
+	-Install Git to your local machine
+	-Create your own a development branch for the project (name_dev). That way you won't mess up with the master.
+	-Feel free to upload your files, datas, or models on your dev branch. If you want it to be merge to the master branch, you just need to submit a pull reuqest on Github
+
+All the Best!
+
+Tangelo
