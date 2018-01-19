@@ -1,0 +1,165 @@
+setwd("C:/Users/hp/Documents/516")
+Aflights<-fread("Train6.csv")
+TrainC<-fread("CruiseFF.csv")
+A15<-fread("MR.csv")
+A51<-fread("51 V.csv")
+
+#specifying outcome variable as factor
+A15$Y<-as.factor(A15$FF)
+# correlation test 
+install.packages('Metrics')
+library('Metrics')
+library('randomForest')
+library('ggplot2')
+install.packages('ggthemes')
+library('ggthemes')
+library('dplyr')
+
+#set random seed and applying Random Forest
+set.seed(101)
+model_rf<-randomForest(Y ~ ., data = A15)
+importance(model_rf)
+# calculate correlation matrix
+correlationMatrix <- cor(A15[,1:15])
+# summarize the correlation matrix
+print(correlationMatrix)
+# find attributes that are highly corrected (ideally >0.75)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.5)
+# print indexes of highly correlated attributes
+print(highlyCorrelated)
+#Result: [1] 12  8 10  9  1  2  6 15  5  7
+
+# Multiple Linear Regression Example 
+fit <- lm(FF ~ TAS_Mean +CAS_Mean + MACH_Mean + GS_Mean + SAT + TAT + AOAC_Mean + AOA2_Mean +AOAI_Mean, data=A15)
+summary(fit) # show results
+coefficients(fit) # model coefficients
+confint(fit, level=0.95) # CIs for model parameters 
+fitted(fit) # predicted values
+residuals(fit) # residuals
+anova(fit) # anova table 
+vcov(fit) # covariance matrix for model parameters 
+influence(fit) # regression diagnostics
+---------------------------------------------------------------
+Result for All Phases (15 vairables)
+
+>confint(fit, level=0.95) # CIs for model parameters
+                   2.5 %        97.5 %
+(Intercept)   -213.05454    812.246113
+TAS_Mean       -25.60221     -7.068028
+CAS_Mean       -17.55327      1.788545
+MACH_Mean   138975.21669 157776.957137
+GS_Mean       -184.45240   -159.556232
+SAT            222.13314    402.344028
+TAT           -245.81631    -87.973567
+AOAC_Mean     -105.40404     64.813634
+AOA2_Mean      757.12073   1211.732028
+AOAI_Mean     -719.48399   -323.756229
+> summary(fit) # show results
+
+Call:
+lm(formula = FF ~ TAS_Mean + CAS_Mean + MACH_Mean + GS_Mean + 
+    SAT + TAT + AOAC_Mean + AOA2_Mean + AOAI_Mean, data = A15)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4786.0  -756.1    87.9   714.4 19491.4 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    299.596    261.481   1.146 0.251961    
+TAS_Mean       -16.335      4.727  -3.456 0.000554 ***
+CAS_Mean        -7.882      4.933  -1.598 0.110128    
+MACH_Mean   148376.087   4794.976  30.944  < 2e-16 ***
+GS_Mean       -172.004      6.349 -27.091  < 2e-16 ***
+SAT            312.239     45.959   6.794 1.26e-11 ***
+TAT           -166.895     40.254  -4.146 3.45e-05 ***
+AOAC_Mean      -20.295     43.410  -0.468 0.640154    
+AOA2_Mean      984.426    115.939   8.491  < 2e-16 ***
+AOAI_Mean     -521.620    100.922  -5.169 2.48e-07 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1779 on 3938 degrees of freedom
+Multiple R-squared:  0.6166,	Adjusted R-squared:  0.6157 
+F-statistic: 703.6 on 9 and 3938 DF,  p-value: < 2.2e-16
+
+> 
+--------------------------------------------------------------------
+
+#Cruise Phase Only
+set.seed(103)
+model_rfC<-randomForest(Y ~ ., data = TrainC)
+importance(model_rfC)
+# calculate correlation matrix
+correlationMatrixC <- cor(TrainC[,1:15])
+# summarize the correlation matrix
+print(correlationMatrixC)
+# find attributes that are highly corrected (ideally >0.75)
+highlyCorrelatedC <- findCorrelation(correlationMatrixC, cutoff=0.5)
+# print indexes of highly correlated attributes
+print(highlyCorrelatedC)
+#Result: [1] 5  6  7  4  9  2 12 10  8 14  1 15 11
+
+
+# Multiple Linear Regression Example 
+fitC <- lm(FF ~ AOA2_Mean + AOAC_Mean + AOAI_Mean + AOA1_Mean + GS_Mean + TAT + TAS_Mean + MACH_Mean + CAS_Mean + WS_Mean + SAT + N1T_Mean, data=TrainC)
+summary(fitC) # show results
+coefficients(fitC) # model coefficients
+confint(fitC, level=0.95) # CIs for model parameters 
+fitted(fitC) # predicted values
+residuals(fitC) # residuals
+anova(fitC) # anova table 
+vcov(fitC) # covariance matrix for model parameters 
+influence(fitC) # regression diagnostics
+--------------------------------------------------------------
+Result for Cruise Phases (15 vairables)
+
+> summary(fitC) # show results
+
+Call:
+lm(formula = FF ~ AOA2_Mean + AOAC_Mean + AOAI_Mean + AOA1_Mean + 
+    GS_Mean + TAT + TAS_Mean + MACH_Mean + CAS_Mean + WS_Mean + 
+    SAT + N1T_Mean, data = TrainC)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1398.78   -49.96    -7.46    46.82   410.50 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -20654.939   4712.898  -4.383 1.54e-05 ***
+AOA2_Mean     -362.597    278.256  -1.303 0.193374    
+AOAC_Mean    -1980.415   1675.151  -1.182 0.237897    
+AOAI_Mean      204.974   1646.708   0.124 0.901009    
+AOA1_Mean     1290.161    354.745   3.637 0.000316 ***
+GS_Mean        -55.907     16.122  -3.468 0.000589 ***
+TAT           -208.038     86.853  -2.395 0.017119 *  
+TAS_Mean      -231.788    162.598  -1.426 0.154875    
+MACH_Mean   467819.388 126246.108   3.706 0.000244 ***
+CAS_Mean      -633.865    159.188  -3.982 8.28e-05 ***
+WS_Mean         82.838     14.787   5.602 4.22e-08 ***
+SAT           -130.952     87.076  -1.504 0.133489    
+N1T_Mean       165.601      2.721  60.869  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 123.4 on 359 degrees of freedom
+Multiple R-squared:  0.9814,	Adjusted R-squared:  0.9808 
+F-statistic:  1577 on 12 and 359 DF,  p-value: < 2.2e-16
+
+> confint(fitC, level=0.95) # CIs for model parameters
+                   2.5 %       97.5 %
+(Intercept) -29923.29652 -11386.58164
+AOA2_Mean     -909.81422    184.61975
+AOAC_Mean    -5274.75616   1313.92696
+AOAI_Mean    -3033.43251   3443.38038
+AOA1_Mean      592.52094   1987.80027
+GS_Mean        -87.61296    -24.20077
+TAT           -378.84248    -37.23288
+TAS_Mean      -551.55263     87.97753
+MACH_Mean   219544.55645 716094.21879
+CAS_Mean      -946.92285   -320.80733
+WS_Mean         53.75715    111.91791
+SAT           -302.19468     40.29020
+N1T_Mean       160.25020    170.95083
+> 
