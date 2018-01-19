@@ -1,0 +1,47 @@
+#SVM for Non-linear -Regression
+install.packages('e1071')
+library(e1071)
+library(rpart)
+Ozone<-read.csv("../516/CruiseFF.csv",header = T,na.strings=c(""))
+
+## split data into a train and test set
+#index <- 1:nrow(Ozone)
+#testindex <- sample(index, trunc(length(index)/3))
+#testset <- na.omit(Ozone[testindex,-3])
+#trainset <- na.omit(Ozone[-testindex,-3])
+predvar <-Ozone$FF
+## svm
+svm.model <- svm(FF ~ ., data = Ozone)
+svm.pred <- predict(svm.model, Ozone)
+print(svm.model)
+error <- svm.model$residuals
+lm_error <- sqrt(mean(error^2)) #92.0943477301658
+error_2 <- Ozone$FF - svm.pred
+svm_error <- sqrt(mean(error_2^2))  #92.0943477301658
+svm_tune <- tune(svm, FF ~ ., data = Ozone,
+                 ranges = list(epsilon = seq(0,1,0.01), cost = 2^(2:9))
+)
+print(svm_tune)
+
+----------------------
+Parameter tuning of ‘svm’:
+
+- sampling method: 10-fold cross validation 
+
+- best parameters:
+ epsilon cost
+    0.01  256
+
+- best performance: 4584.545 
+
+
+#The best model
+best_mod <- svm_tune$best.model
+best_mod_pred <- predict(best_mod, Ozone) 
+error_best_mod <- Ozone$FF - best_mod_pred 
+# this value can be different on your computer
+# because the tune method randomly shuffles the data
+best_mod_RMSE <- sqrt(mean(error_best_mod^2)) #24.220608082959
+plot(svm_tune)
+plot(Ozone,pch=16)
+points(Ozone$FF, best_mod_pred, col = "blue", pch=4)
